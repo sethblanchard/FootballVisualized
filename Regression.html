@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Team Regression</title>
+
+  
+  <link rel="stylesheet" href="css/foundation.css" />
+  
+
+  <script src="js/vendor/custom.modernizr.js"></script>
+
+</head>
+<body>
+	<header class="row visHeader">
+		<div class="large-12 columns">
+			<h1 class="masthead">Regression</h1>
+			<h2 class="subhead">- a return, a lessing of severity</h2>
+			<p>There are base statistical indicators from how your football team performed last season that can be used to forcast where your team will end up next year. Lets fint out if your team will regress</p>
+		</div>
+	</header>
+	<div class="row">
+		<div id="filters" class="large-12">
+		</div>
+		<div id="regressionViz" class="large-12 columns">
+		</div>
+		<div>
+			<h3>References</h3>
+			<ul>
+				<li>Profootball-reference</li>
+				<li>Barnwell Regression</li>
+				<li>Data Sets - url</li>
+			</ul>
+		</div>
+	</div>
+	<footer class="row">
+		<div class="large-3 columns">
+			<h4>About</h4>
+		</div>
+		<div class="large-3 columns">
+
+		</div>
+		<div class="large-3 columns">
+			<h4>Links</h4>
+		</div>
+	</footer>
+
+  <script>
+  document.write('<script src=' +
+  ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
+  '.js><\/script>')
+  </script>
+  
+  <!--  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+  <script src="js/foundation.min.js"></script>
+  <!--<script src="js/vendor/d3..v3.min.js"></script>-->
+  <script src="js/vendor/d3.v3.js"></script>
+  <script src="js/vendor/tabletop.js"></script>
+
+
+<script>
+
+	var url = "https://docs.google.com/spreadsheet/pub?key=0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE&output=html";
+	var dataKey = "0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE";
+
+// function init() {
+//   Tabletop.init( { key: dataKey,
+//                    callback: function(data, tabletop) { console.log(data) },
+//                    simpleSheet: true } )
+// }
+
+
+	//Build custom 
+
+
+	var plotRegression = function(seasonData){
+
+		var width = 500,
+	    height = 500, 
+	    margin = 50;
+
+		var svg=d3.select("#regressionViz").append("svg").attr("width",width).attr("height",height);
+		var x= d3.scale.linear().domain([0,600]).range([margin,width-margin]); //points scored -- diff
+		var y= d3.scale.linear().domain([0,16]).range([height-margin,margin]); //pythagreon diff
+		
+		var triangle = function(d){
+
+			var x1 = x((d.ptdif > 0) ? d.ptso : d.pts),
+				x2 = x((d.ptdif > 0) ? d.pts : d.ptso),
+				y1 = y((d.ptdif > 0) ? d.w : d.w - d.wdiff),
+				y2 = y((d.ptdif > 0) ? d.w : d.w + d.wdiff); 
+
+				//trying to build two types of triangles
+				//left facing 
+				return "M " + x1 + " " + y1 + " L " + x2 + " " + y1 + " L " + x2 + " " + y2 + " z";
+		};
+
+
+		//Pts	PtsO
+		// var area = d3.svg.area()
+		// .x0 = function(d){
+		// 	console.log(d.ptdif);
+		// 	console.log(d.ptso);
+		// 	console.log(d.pts);
+
+		// 	return (d.ptdif > 0) ? d.ptso : d.pts;
+		// }
+		// .x1 = function(d){
+		// 	console.log(d.ptdif);
+		// 	console.log(d.pts);
+		// 	console.log(d.ptso);
+		// 	return (d.ptdif > 0) ? d.pts : d.ptso;
+		// }
+		// .y0 = function(d){
+		// 	console.log(d.ptdif);
+		// 	console.log(d.w);
+		// 	console.log(d.wdiff);
+		// 	console.log(d.w - d.wdiff);
+		// 	return (d.ptdif > 0) ? d.w : d.w - d.wdiff; 
+		// 	//Because lower the highet the bigger the number we need to add the regressiong games
+
+		// }
+		// .y1 = function(d){
+		// 	console.log(d.ptdif);
+		// 	console.log(d.w);
+		// 	console.log(d.wdiff);
+		// 	console.log(d.w + d.wdiff);
+		// 	return (d.ptdif > 0) ? d.w : d.w + d.wdiff;
+		// 	//opposite above
+		// };
+
+
+		// var area = d3.svg.area()
+		//     .x0(function(d) { return x((d.ptdif > 0) ? d.ptso : d.pts); })
+		//     .x1(function(d) { return x((d.ptdif > 0) ? d.pts : d.ptso); })
+		//     .y0(function(d) { return y((d.ptdif > 0) ? d.w : d.w - d.wdiff);})
+		//     .y1(function(d) { return y((d.ptdif > 0) ? d.w : d.w + d.wdiff); });
+
+// svg.append("path")
+//       .datum(seasonData)
+//       .attr("d", triangle);
+		svg.selectAll("path").data(seasonData).enter()
+		    .append("path")
+		    .attr("d", triangle)
+			.style("fill",function(d) {return '#' + d.primarycolor;})
+		    // .style("stroke",function(d) {return '#' + d.secondarycolor;})
+		    // .style("stroke-width",function(d) {return 4;})
+		    .style("opactiy", function(d){return 80;});
+		 
+		    //   .append("title")
+		    //   .text(function(d) {return d.tm;})
+		   
+		  // now we initiate - moving the marks to their position
+		  // svg.selectAll("circle").transition().duration(1000)
+		  //   .attr("cx",function(d) {return x(d.w);})
+		  //   .attr("cy",function(d) {return y(d.ptdif);})
+		  //   .attr("r",function(d) {return r(d.wdiff);})
+
+
+	}
+
+	Tabletop.init( { key: dataKey,
+                   callback: function(data,tabletop){
+						var cleanData = data.map(function(obj){
+								obj.ptdif = parseFloat(obj.ptdif);
+								obj.ptso = parseFloat(obj.ptso);
+								obj.pts = parseFloat(obj.pts);
+								obj.w = parseFloat(obj.w) ;
+								obj.wdiff =  parseFloat(obj.wdiff);
+								return obj;
+						})
+						plotRegression(cleanData);
+                   },
+                   simpleSheet: true } )
+
+</script>
+
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  -->
+  
+  <script>
+    $(document).foundation();
+  </script>
+</body>
+</html>
