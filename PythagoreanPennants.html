@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Pythagreaon Pennants</title>
+
+  
+  <link rel="stylesheet" href="css/foundation.css" />
+  <link rel="stylesheet" href="css/PythagoreanPennants.css" />
+  
+
+  <script src="js/vendor/custom.modernizr.js"></script>
+
+</head>
+<body>
+	<header class="row visHeader">
+		<div class="large-12 columns">
+			<h1 class="masthead">Pythagorean Pennants</h1>
+			<h2 class="subhead">The Flag you hung on your wall now telling your teams future</h2>
+			<p>There are base statistical indicators from how your football team performed last season that can be used to forcast where your team will end up next year. Lets fint out if your team will regress</p>
+		</div>
+	</header>
+	<div class="row">
+		<div id="filters" class="large-12">
+		</div>
+		<div id="regressionViz" class="large-12 columns">
+		</div>
+		<div id="Chart">
+		</div>
+		<div>
+			<h3>References</h3>
+			<ul>
+				<li>Profootball-reference</li>
+				<li>Barnwell Regression</li>
+				<li>Data Sets - url</li>
+			</ul>
+		</div>
+	</div>
+	<footer class="row">
+		<div class="large-3 columns">
+			<h4>About</h4>
+		</div>
+		<div class="large-3 columns">
+
+		</div>
+		<div class="large-3 columns">
+			<h4>Links</h4>
+		</div>
+	</footer>
+
+  <script>
+  document.write('<script src=' +
+  ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
+  '.js><\/script>')
+  </script>
+  
+  <!--  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+  <script src="js/foundation.min.js"></script>
+  <!--<script src="js/vendor/d3..v3.min.js"></script>-->
+  <script src="js/vendor/d3.v3.js"></script>
+  <script src="js/vendor/tabletop.js"></script>
+
+
+<script>
+
+
+	/*
+	TODO: 
+		1.	Turn Data into JSON
+		2.	Order Data based on what? Pythagrean wins? Wins + pts diff? Division Winners etc? 
+	*/
+
+	var url = "https://docs.google.com/spreadsheet/pub?key=0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE&output=html";
+	var dataKey = "0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE";
+
+	
+	var plotRegression = function(seasonData){
+
+		var width = document.width/4,
+	    	height = 100, 
+	    	oldWidth = 500, //should be dynamic with sliders - set size of pennats (up and down etc)
+	    	oldHieght = 500, //should be dynamic with sliders
+	    	margin = 50;
+
+		var oldVer=d3.select("#regressionViz").append("svg").attr("width",oldWidth).attr("height",oldHieght);
+		var x= d3.scale.linear().domain([0,600]).range([margin,oldWidth-margin]); //points scored -- diff
+		var y= d3.scale.linear().domain([0,16]).range([height-oldHieght,margin]); //pythagreon diff
+		
+		
+
+		var triangleOld = function(d){
+
+			var x1 = x(d.ptso),
+				x2 = x(d.pts),
+				y1 = y(d.w),
+				//y2 = y(d.w + mapWinDifference(d.wdiff)); //Show likley regression for next year
+				y2 = y(d.pw); //or how many games the team should have one this year.. 
+
+				console.log(d);
+				console.log("***")
+
+				//trying to build two types of triangles
+				//left facing 
+
+				var path = "M " + x1 + " " + y1 + " L " + x2 + " " + y1 + " L " + x2 + " " + y2 + " z";
+				console.log(path);
+				return path;
+		};
+
+
+		var triangle = function(d){
+
+			var x1 = x(d.ptso),
+				x2 = x(d.pts),
+				y1 = y(d.w),
+				//y2 = y(d.w + mapWinDifference(d.wdiff)); //Show likley regression for next year
+				y2 = y(d.pw); //or how many games the team should have one this year.. 
+
+				//keep these differences start with x/y that are in the center of the width and then move back and left... 
+			var	xDiff = x2 - x1,
+				yDiff = y2 - y1,
+				xCenter = width/2
+				yCenter = height/2; //Might need to flip to get centering right..
+
+				//centering this way isn't quite right. You need to translate
+				//TODO: Rename
+			var	xA = xCenter - xDiff/2;
+				xB = xCenter + xDiff/2;
+				yA = yCenter - yDiff/2;
+				yB = yCenter + yDiff/2  
+
+				console.log(d);
+				console.log("***")
+
+				//trying to build two types of triangles
+				//left facing 
+
+				var path = "M " + xA + " " + yA + " L " + xB + " " + yA + " L " + xB + " " + yB + " z";
+				console.log(path);
+				return path;
+		};
+
+		//mapping from the table from Barnwell's article
+		var mapWinDifference = function(winDelta){
+
+				if(winDelta < -2){
+						return 2.6;
+				}else if(winDelta < -1.5){
+						return 2.5;
+
+				}else if(winDelta < -1){
+						return 2.0;
+
+				}else if(winDelta < -0.5){
+						return 0.6;
+
+				}else if(winDelta < 0.5){
+						return 0;
+
+				}else if(winDelta < 1){
+						return -0.9;
+
+				}else if(winDelta < 1.5){
+						return -1.5;
+
+				}else if(winDelta < 2){
+						return -1.8;
+
+				}else{
+						return -2.5;
+				}
+		};
+
+		var yAxis = d3.svg.axis()
+		    .scale(y)
+		    .orient("left");
+
+		oldVer.selectAll("path").data(seasonData).enter()
+		    .append("path")
+		    .attr("d", triangleOld)
+			.style("fill",function(d) {return '#' + d.primarycolor;})
+		    .style("stroke",function(d) {return '#' + d.secondarycolor;})
+		    .style("stroke-width",function(d) {return 3;})
+		    .attr("fill-opactiy", function(d){return 0.5;})
+		    .style("opactiy", function(d){return 0.5;})
+		    .append("title")
+		    .text(function(d) {return d.tm;});
+	  	
+	  	oldVer.append("g")
+      		.attr("class", "y axis")
+      		.call(yAxis)
+
+  	 	var svg = d3.select("#Chart").selectAll(".team")
+		      .data(seasonData)
+			    .enter().append("svg")
+			      .attr("class", "team")
+			      .attr("width", width)
+			      .attr("height", height)
+			    .append("g")
+
+  		svg.append("path")
+		    .attr("d", triangle)
+			.style("fill",function(d) {return '#' + d.primarycolor;})
+		    .style("stroke",function(d) {return '#' + d.secondarycolor;})
+		    .style("stroke-width",function(d) {return 3;})
+		    .attr("fill-opactiy", function(d){return 0.5;})
+		    .style("opactiy", function(d){return 0.5;})
+		    .append("title")
+		    .text(function(d) {return d.tm;});
+
+	}
+
+	Tabletop.init( { key: dataKey,
+                   callback: function(data,tabletop){
+                   		//I think table top will clean it for us :) 
+						var cleanData = data.map(function(obj){
+								obj.ptdif = parseFloat(obj.ptdif);
+								obj.ptso = parseFloat(obj.ptso);
+								obj.pts = parseFloat(obj.pts);
+								obj.w = parseFloat(obj.w) ;
+								obj.pw = parseFloat(obj.pw) ;
+								obj.wdiff =  parseFloat(obj.wdiff);
+								return obj;
+						})
+						plotRegression(cleanData);
+                   },
+                   simpleSheet: true } )
+
+</script>
+
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  -->
+  
+  <script>
+    $(document).foundation();
+  </script>
+</body>
+</html>
