@@ -10,26 +10,49 @@
   
   <link rel="stylesheet" href="css/foundation.css" />
   <link rel="stylesheet" href="css/PythagoreanPennants.css" />
-  
+  <style>
+  	.team--label{
+  		font-size: 0.8em;
+  		text-align: left;
+  		font-color:#4B5B61;
+  	}
+
+	#Chart{
+		padding:20px 0;
+	}
+
+  </style>
 
   <script src="js/vendor/custom.modernizr.js"></script>
-
+<script type="text/javascript">
+  (function() {
+    var config = {
+      kitId: 'jjn0bxe',
+      scriptTimeout: 3000
+    };
+    var h=document.getElementsByTagName("html")[0];h.className+=" wf-loading";var t=setTimeout(function(){h.className=h.className.replace(/(\s|^)wf-loading(\s|$)/g," ");h.className+=" wf-inactive"},config.scriptTimeout);var tk=document.createElement("script"),d=false;tk.src='//use.typekit.net/'+config.kitId+'.js';tk.type="text/javascript";tk.async="true";tk.onload=tk.onreadystatechange=function(){var a=this.readyState;if(d||a&&a!="complete"&&a!="loaded")return;d=true;clearTimeout(t);try{Typekit.load(config)}catch(b){}};var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(tk,s)
+  })();
+</script>
 </head>
 <body>
 	<header class="row visHeader">
 		<div class="large-12 columns">
-			<h1 class="masthead">Pythagorean Pennants</h1>
-			<h2 class="subhead">The Flag you hung on your wall now telling your teams future</h2>
+			<h1 class="masthead tk-avro">Pythagorean Pennants</h1>
+			<h2 class="tk-soleil">The Flag you hung on your wall now telling your teams future</h2>
 			<p>There are base statistical indicators from how your football team performed last season that can be used to forcast where your team will end up next year. Lets fint out if your team will regress</p>
 		</div>
 	</header>
 	<div class="row">
-		<div id="filters" class="large-12">
+		<div id="Chart" class="large-12">
 		</div>
-		<div id="regressionViz" class="large-12 columns">
-		</div>
-		<div id="Chart">
-		</div>
+		<article>
+			<p>
+				The Pythagorean Expectation or Projection is way of measuring your team's actual performance. It essentially says that a team's point differential is a better predictor of future performance than their actual record. It was developed by the great Bill James[1] and adapted for basketball by Daryl Morely[2] and shown for football on the FootballOutsiders[3] website.
+			</p>
+			<p>
+				I took the numbers and put a visual twist on them, see your favorite team colors - like on your wall as a kid - and quickly see which way your team could be headed in the upcoming season. 
+			</p>
+		</article>
 		<div>
 			<h3>References</h3>
 			<ul>
@@ -76,40 +99,22 @@
 	var url = "https://docs.google.com/spreadsheet/pub?key=0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE&output=html";
 	var dataKey = "0AukWLYrS6C9jdEFuYUtRSnhzNU5JMGJnZTBvMlF3WlE";
 
+	var xdiffs = [],
+		ydiffs =[];
+
 	
 	var plotRegression = function(seasonData){
 
-		var width = document.width/4,
-	    	height = 100, 
-	    	oldWidth = 500, //should be dynamic with sliders - set size of pennats (up and down etc)
-	    	oldHieght = 500, //should be dynamic with sliders
+		console.log(seasonData);
+		var width = 155,
+	    	height = 110, 
+	    	domainWidth = 500, //should be dynamic with sliders - set size of pennats (up and down etc)
+	    	domainHieght = 500, //should be dynamic with sliders
 	    	margin = 50;
 
-		var oldVer=d3.select("#regressionViz").append("svg").attr("width",oldWidth).attr("height",oldHieght);
-		var x= d3.scale.linear().domain([0,600]).range([margin,oldWidth-margin]); //points scored -- diff
-		var y= d3.scale.linear().domain([0,16]).range([height-oldHieght,margin]); //pythagreon diff
+		var x= d3.scale.linear().domain([0,600]).range([margin,domainWidth-margin]); //points scored -- diff
+		var y= d3.scale.linear().domain([0,16]).range([height-domainHieght,margin]); //pythagreon diff
 		
-		
-
-		var triangleOld = function(d){
-
-			var x1 = x(d.ptso),
-				x2 = x(d.pts),
-				y1 = y(d.w),
-				//y2 = y(d.w + mapWinDifference(d.wdiff)); //Show likley regression for next year
-				y2 = y(d.pw); //or how many games the team should have one this year.. 
-
-				console.log(d);
-				console.log("***")
-
-				//trying to build two types of triangles
-				//left facing 
-
-				var path = "M " + x1 + " " + y1 + " L " + x2 + " " + y1 + " L " + x2 + " " + y2 + " z";
-				console.log(path);
-				return path;
-		};
-
 
 		var triangle = function(d){
 
@@ -121,9 +126,12 @@
 
 				//keep these differences start with x/y that are in the center of the width and then move back and left... 
 			var	xDiff = x2 - x1,
-				yDiff = y2 - y1,
+				yDiff = y1 - y2,
 				xCenter = width/2
 				yCenter = height/2; //Might need to flip to get centering right..
+
+				xdiffs.push(xDiff);
+				ydiffs.push(yDiff);
 
 				//centering this way isn't quite right. You need to translate
 				//TODO: Rename
@@ -132,14 +140,10 @@
 				yA = yCenter - yDiff/2;
 				yB = yCenter + yDiff/2  
 
-				console.log(d);
-				console.log("***")
-
 				//trying to build two types of triangles
 				//left facing 
 
 				var path = "M " + xA + " " + yA + " L " + xB + " " + yA + " L " + xB + " " + yB + " z";
-				console.log(path);
 				return path;
 		};
 
@@ -174,24 +178,6 @@
 				}
 		};
 
-		var yAxis = d3.svg.axis()
-		    .scale(y)
-		    .orient("left");
-
-		oldVer.selectAll("path").data(seasonData).enter()
-		    .append("path")
-		    .attr("d", triangleOld)
-			.style("fill",function(d) {return '#' + d.primarycolor;})
-		    .style("stroke",function(d) {return '#' + d.secondarycolor;})
-		    .style("stroke-width",function(d) {return 3;})
-		    .attr("fill-opactiy", function(d){return 0.5;})
-		    .style("opactiy", function(d){return 0.5;})
-		    .append("title")
-		    .text(function(d) {return d.tm;});
-	  	
-	  	oldVer.append("g")
-      		.attr("class", "y axis")
-      		.call(yAxis)
 
   	 	var svg = d3.select("#Chart").selectAll(".team")
 		      .data(seasonData)
@@ -205,11 +191,20 @@
 		    .attr("d", triangle)
 			.style("fill",function(d) {return '#' + d.primarycolor;})
 		    .style("stroke",function(d) {return '#' + d.secondarycolor;})
-		    .style("stroke-width",function(d) {return 3;})
+		    .style("stroke-width",function(d) {return 1;})
 		    .attr("fill-opactiy", function(d){return 0.5;})
 		    .style("opactiy", function(d){return 0.5;})
 		    .append("title")
 		    .text(function(d) {return d.tm;});
+	    //Team Labels
+	    svg.append("text")
+	    		.text(function(d) {return d.shortname + ' ('+ d.w +'-'+d.l+')';})
+	    		.style("text-anchor", "middle")
+	    		.attr('class','team--label')
+	    		//.style("fill",function(d) {return '#' + d.primarycolor;})
+	    		.attr('y', 20)
+	    		.attr('x', 35);
+
 
 	}
 
